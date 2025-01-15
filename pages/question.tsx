@@ -14,6 +14,7 @@ type Question = {
 const Questions: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
   const fetchQuestions = async (url: string) => {
     try {
@@ -49,6 +50,61 @@ const Questions: React.FC = () => {
     loadQuestions();
   }, []);
 
+  const updateAnswer = async (playerId: number, answer: boolean) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/setAnswer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ playerId, answer }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      setMessage('Player answer updated successfully (development)');
+    } catch{
+      try {
+        const response = await fetch('https://previa-beta.vercel.app/api/setAnswer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ playerId, answer }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        setMessage('Player answer updated successfully (production)');
+      } catch (err) {
+        console.error('Error updating player answer:', err);
+        setMessage('Error updating player answer');
+      }
+    }
+  };
+
+  const handleAnswerSelection = (isCorrect: boolean) => {
+    // Obtener el playerId desde localStorage
+    const storedData = localStorage.getItem('Player'); // Cambiar "Player" por la clave correcta en el futuro
+    if (!storedData) {
+      setMessage('Player ID not found in localStorage');
+      return;
+    }
+
+    const parsedData = JSON.parse(storedData);
+    const playerId = parsedData?.id;
+
+    if (!playerId) {
+      setMessage('Invalid Player ID');
+      return;
+    }
+
+    // Llamar a updateAnswer con el playerId y el valor seleccionado
+    updateAnswer(playerId, isCorrect);
+  };
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -82,7 +138,7 @@ const Questions: React.FC = () => {
               </div>
             )}
             <button
-              onClick={() => alert(`Is correct: ${question.is_correct}`)}
+              onClick={() => handleAnswerSelection(question.is_correct)}
               className="text-left text-blue-500 hover:underline flex-1"
             >
               {question.answer_text}
@@ -90,6 +146,8 @@ const Questions: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {message && <p>{message}</p>}
     </div>
   );
 };
