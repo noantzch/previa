@@ -5,7 +5,7 @@ type Player = {
   id: number;
   name: string;
   answer: boolean;
-  game_id: number; // Asegúrate de incluir game_id en el tipo Player
+  game_id: number; 
 };
 
 export default async function handler(
@@ -19,7 +19,6 @@ export default async function handler(
       return res.status(400).json({ error: "game_id is required" });
     }
 
-    // Asegúrate de que el game_id sea un número
     const gameId = parseInt(game_id as string, 10);
 
     // Consulta para traer los jugadores de un game_id específico

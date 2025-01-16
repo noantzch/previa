@@ -53,37 +53,52 @@ function RegisterModal({ game, onClose }: { game: Game; onClose: () => void }) {
 
   const handleRegister = async () => {
     if (!name) {
-      setError('El nombre es obligatorio');
+      setError("El nombre es obligatorio");
       return;
     }
-
+  
     try {
       const response = await fetch(`/api/checkAdmin?game_id=${game.id}`);
       const data = await response.json();
-
+  
       if (admin && data.adminExists) {
-        setError('Ya existe un administrador para este juego');
+        setError("Ya existe un administrador para este juego");
         return;
       }
-
-      const registerResponse = await fetch('/api/registerPlayer', {
-        method: 'POST',
+  
+      const registerResponse = await fetch("/api/registerPlayer", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, admin, game_id: game.id }),
       });
-
+  
       if (registerResponse.ok) {
+        const playerData = await registerResponse.json();
+  
+        // Guardar información en localStorage
+        localStorage.setItem(
+          "Player",
+          JSON.stringify({
+            id: playerData.id,
+            admin: playerData.admin,
+            game_id: playerData.game_id,
+            answered: playerData.answer,
+          })
+        );
+  
+        // Redirigir a la sala de espera
         router.push(`/sala-de-espera-${game.id}`);
       } else {
-        setError('Error al registrar jugador');
+        setError("Error al registrar jugador");
       }
     } catch (error) {
-      console.error('Error registrando jugador:', error);
-      setError('Error al registrar jugador');
+      console.error("Error registrando jugador:", error);
+      setError("Error al registrar jugador");
     }
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

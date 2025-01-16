@@ -1,4 +1,3 @@
-// Archivo: pages/api/registerPlayer.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "@vercel/postgres";
 
@@ -12,28 +11,22 @@ export default async function registerPlayer(
 
   const { name, admin, game_id } = req.body;
 
-  if (!name || typeof admin !== "boolean" || !game_id) {
+  if (!name || game_id === undefined || admin === undefined) {
     return res.status(400).json({ error: "Datos inválidos" });
   }
 
   try {
-    // Inserción en la tabla players
     const result = await sql`
       INSERT INTO players (name, admin, game_id)
       VALUES (${name}, ${admin}, ${game_id})
-      RETURNING id;
+      RETURNING id, admin, game_id, answer;
     `;
+    const newPlayer = result.rows[0];
 
-    // Notificar a los clientes conectados (simplificado)
-    // Aquí puedes usar websockets u otro método para actualizar la lista de jugadores
-
-    res.status(201).json({ playerId: result.rows[0].id });
+    res.status(201).json(newPlayer);
   } catch (error) {
-    console.error("Error registrando jugador:", error);
+    console.error("Error al registrar jugador:", error);
     res.status(500).json({ error: "Error al registrar jugador" });
   }
 }
-
-
-
 
