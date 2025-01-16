@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'; // Importamos useRouter para hacer la redirección
-import SiguientePregunta from './Components/NextQuestion';
+import SiguientePregunta from './components/NextQuestion';
 
 type Player = {
   id: number;
