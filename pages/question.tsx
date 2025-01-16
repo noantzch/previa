@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import PlayersAnswered from './Components/PlayersAnswered';
 
 type Question = {
   id: number;
@@ -148,6 +149,10 @@ const Questions: React.FC = () => {
       </div>
 
       {message && <p>{message}</p>}
+      
+      <PlayersAnswered />
+      
+
     </div>
   );
 };
