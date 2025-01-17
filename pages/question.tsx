@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import PlayersAnswered from './Components/PlayersAnswered';
+import PlayersAnswered from './comp/PlayersAnswered';
 
 type Question = {
   id: number;
