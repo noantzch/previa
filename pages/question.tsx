@@ -38,13 +38,11 @@ const Questions: React.FC = () => {
   };
 
   useEffect(() => {
-    const localUrl = 'http://localhost:3000/api/getQuestion';
-    const productionUrl = 'https://previa-beta.vercel.app/api/getQuestion';
-
     const loadQuestions = async () => {
-      const success = await fetchQuestions(localUrl);
+      // Usamos un endpoint relativo que se resuelve automáticamente según el entorno
+      const success = await fetchQuestions('/api/getQuestion');
       if (!success) {
-        await fetchQuestions(productionUrl);
+        setError('Failed to fetch questions');
       }
     };
 
@@ -53,7 +51,8 @@ const Questions: React.FC = () => {
 
   const updateAnswer = async (playerId: number, answer: boolean) => {
     try {
-      const response = await fetch('http://localhost:3000/api/setAnswer', {
+      // Usamos un endpoint relativo que se resuelve automáticamente según el entorno
+      const response = await fetch('/api/setAnswer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,31 +63,15 @@ const Questions: React.FC = () => {
       if (!response.ok) {
         throw new Error(await response.text());
       }
-      setMessage('Player answer updated successfully (development)');
-    } catch{
-      try {
-        const response = await fetch('https://previa-beta.vercel.app/api/setAnswer', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ playerId, answer }),
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-        setMessage('Player answer updated successfully (production)');
-      } catch (err) {
-        console.error('Error updating player answer:', err);
-        setMessage('Error updating player answer');
-      }
+      setMessage('Player answer updated successfully');
+    } catch (err) {
+      console.error('Error updating player answer:', err);
+      setMessage('Error updating player answer');
     }
   };
 
   const handleAnswerSelection = (isCorrect: boolean) => {
-    // Obtener el playerId desde localStorage
-    const storedData = localStorage.getItem('Player'); // Cambiar "Player" por la clave correcta en el futuro
+    const storedData = localStorage.getItem('Player');
     if (!storedData) {
       setMessage('Player ID not found in localStorage');
       return;
@@ -102,7 +85,6 @@ const Questions: React.FC = () => {
       return;
     }
 
-    // Llamar a updateAnswer con el playerId y el valor seleccionado
     updateAnswer(playerId, isCorrect);
   };
 
@@ -114,12 +96,11 @@ const Questions: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  // Get the first question to display question_text only once
   const { question_text } = questions[0];
 
   return (
     <div className="p-6">
-      <p className="mb-6 text-lg">{question_text}</p> {/* Display question_text only once */}
+      <p className="mb-6 text-lg">{question_text}</p>
 
       <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {questions.map((question) => (
@@ -151,8 +132,6 @@ const Questions: React.FC = () => {
       {message && <p>{message}</p>}
       
       <PlayersAnswered />
-      
-
     </div>
   );
 };
