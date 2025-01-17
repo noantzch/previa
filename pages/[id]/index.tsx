@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
-import PlayerList from '../Components/PlayerList';
 import { useEffect, useState } from 'react';
 import GameFoot from '../Components/GameFoot';
+import PlayerList from '../Components/PlayerList';
 
 export default function WaitingRoom() {
   const router = useRouter();
