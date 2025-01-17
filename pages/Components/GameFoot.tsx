@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+
 
 export default function GameFoot() {
   const [gameStarted, setGameStarted] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const router = useRouter();
 
   useEffect(() => {
     // Obtener el objeto player del localStorage
@@ -75,11 +74,7 @@ export default function GameFoot() {
 
           // Eliminar Player del localStorage al finalizar el juego
           localStorage.removeItem('Player');
-
-          router.push('/'); // Redirigir al índice al finalizar el juego
-        } else {
-          router.push('/question'); // Redirigir a /question al iniciar el juego
-        }
+        } 
       } else {
         console.error(data.error);
       }

@@ -5,7 +5,7 @@ import { sql } from '@vercel/postgres';
 type Game = {
   id: number;
   started: boolean;
-  answered: boolean; // Añadir la columna answered
+  answered: boolean;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'; // Importamos useRouter para hacer la redirección
-import SiguientePregunta from './components/NextQuestion';
+import SiguientePregunta from './Components/NextQuestion';
+import GameFoot from './Components/GameFoot';
 
 type Player = {
   id: number;
@@ -42,9 +43,20 @@ export default function Answers() {
       const response = await fetch(`/api/game?game_id=${gameId}`);
       const data = await response.json();
 
-      if (response.ok && data.game.answered) {
-        // Redirigir a /question si answered es true
-        router.push('/question');
+      if (response.ok) {
+        // Verificar si game.started es false
+        if (data.game && data.game.started === false) {
+          console.log('El juego no ha comenzado. Redirigiendo al inicio...');
+          
+          // Eliminar el objeto Player del localStorage
+          localStorage.removeItem('Player');
+
+          // Redirigir al índice
+          router.push('/');
+        } else if (data.game && data.game.answered) {
+          // Redirigir a /question si answered es true
+          router.push('/question');
+        }
       }
     } catch (error) {
       console.error('Error fetching game status:', error);
@@ -65,10 +77,10 @@ export default function Answers() {
     if (gameId) {
       fetchPlayers(gameId);
 
-      // Verificar el estado del juego cada 2 segundos
+      // Verificar el estado del juego cada 1 segundo
       const intervalId = setInterval(() => {
         fetchGameStatus(gameId);
-      }, 2000);
+      }, 1000); // 1 segundo
 
       // Limpiar el intervalo cuando el componente se desmonte
       return () => clearInterval(intervalId);
@@ -117,6 +129,7 @@ export default function Answers() {
         </tbody>
       </table>
       <SiguientePregunta />
+      <GameFoot />
     </div>
   );
 }

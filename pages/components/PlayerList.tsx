@@ -1,43 +1,103 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Player = {
-  id: number
-  name: string
-  admin: boolean
-  answer: boolean | null
-}
+  id: number;
+  name: string;
+  admin: boolean;
+  answer: boolean | null;
+};
 
-export default function PlayerList({ gameId }: { gameId: string }) {
-  const [players, setPlayers] = useState<Player[]>([])
+
+export default function PlayerList() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [gameId, setGameId] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    // Obtener gameId del localStorage
+    const playerData = localStorage.getItem('Player');
+    console.log('Datos de Player desde localStorage:', playerData);
+
+    if (playerData) {
+      try {
+        const parsedPlayer = JSON.parse(playerData);
+        console.log('Objeto Player parseado:', parsedPlayer);
+
+        if (parsedPlayer && parsedPlayer.game_id) {
+          setGameId(parsedPlayer.game_id);
+          console.log('gameId obtenido:', parsedPlayer.game_id);
+        } else {
+          console.error('El objeto Player no contiene game_id.');
+        }
+      } catch (error) {
+        console.error('Error al parsear el objeto Player:', error);
+      }
+    } else {
+      console.error('No se encontró el objeto Player en localStorage.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!gameId) {
+      console.log('Esperando a que gameId tenga un valor...');
+      return;
+    }
+
+    const fetchPlayersAndCheckGame = async () => {
+      console.log('Iniciando fetchPlayersAndCheckGame con gameId:', gameId);
+
       try {
         const gameIdNumber = parseInt(gameId, 10);
+        console.log('gameIdNumber:', gameIdNumber);
+
         if (isNaN(gameIdNumber)) {
           console.error('gameId debe ser un número entero');
           return;
         }
 
-        const response = await fetch(`/api/getPlayersByGame?game_id=${gameIdNumber}`)
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Datos obtenidos:', data)
-          setPlayers(data.players)
+        // Obtener jugadores
+        const playersResponse = await fetch(`/api/getPlayersByGame?game_id=${gameIdNumber}`);
+        console.log('Respuesta de jugadores:', playersResponse);
+
+        if (playersResponse.ok) {
+          const playersData = await playersResponse.json();
+          console.log('Datos de jugadores obtenidos:', playersData);
+          setPlayers(playersData.players);
         } else {
-          console.error('No se pudo obtener a los jugadores')
+          console.error('No se pudo obtener a los jugadores');
+        }
+
+        // Verificar estado del juego
+        console.log('Haciendo fetch a /api/game...');
+        const gameResponse = await fetch(`/api/game?game_id=${gameIdNumber}`);
+        console.log('Respuesta de estado del juego:', gameResponse);
+
+        if (gameResponse.ok) {
+          const gameData = await gameResponse.json();
+          console.log('Estado del juego obtenido:', gameData);
+          // Redirigir si el juego ha comenzado
+          if (gameData.game.started) {
+            console.log('El juego ha comenzado. Redirigiendo a /question...');
+            router.push('/question');
+          } else {
+            console.log('El juego aún no ha comenzado.');
+          }
+        } else {
+          console.error('No se pudo obtener el estado del juego');
         }
       } catch (error) {
-        console.error('Error obteniendo jugadores:', error)
+        console.error('Error obteniendo datos:', error);
       }
-    }
+    };
 
-    fetchPlayers()
-    const interval = setInterval(fetchPlayers, 5000)
-    return () => clearInterval(interval)
-  }, [gameId])
+    fetchPlayersAndCheckGame();
+    const interval = setInterval(fetchPlayersAndCheckGame, 3000);
+
+    return () => clearInterval(interval);
+  }, [gameId, router]);
 
   return (
     <div>
@@ -58,5 +118,5 @@ export default function PlayerList({ gameId }: { gameId: string }) {
         ))}
       </ul>
     </div>
-  )
+  );
 }
