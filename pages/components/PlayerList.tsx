@@ -10,42 +10,15 @@ type Player = {
   answer: boolean | null;
 };
 
+interface PlayerListProps {
+  gameId: string; // Asegúrate de que el tipo sea 'string'
+}
 
-export default function PlayerList() {
+export default function PlayerList({ gameId }: PlayerListProps) {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [gameId, setGameId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // Obtener gameId del localStorage
-    const playerData = localStorage.getItem('Player');
-    console.log('Datos de Player desde localStorage:', playerData);
-
-    if (playerData) {
-      try {
-        const parsedPlayer = JSON.parse(playerData);
-        console.log('Objeto Player parseado:', parsedPlayer);
-
-        if (parsedPlayer && parsedPlayer.game_id) {
-          setGameId(parsedPlayer.game_id);
-          console.log('gameId obtenido:', parsedPlayer.game_id);
-        } else {
-          console.error('El objeto Player no contiene game_id.');
-        }
-      } catch (error) {
-        console.error('Error al parsear el objeto Player:', error);
-      }
-    } else {
-      console.error('No se encontró el objeto Player en localStorage.');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!gameId) {
-      console.log('Esperando a que gameId tenga un valor...');
-      return;
-    }
-
     const fetchPlayersAndCheckGame = async () => {
       console.log('Iniciando fetchPlayersAndCheckGame con gameId:', gameId);
 

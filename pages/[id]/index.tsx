@@ -7,7 +7,6 @@ export default function WaitingRoom() {
   const router = useRouter();
   const { id } = router.query;
   const [gameId, setGameId] = useState<number | null>(null);
-  const [playerId, setPlayerId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -23,13 +22,6 @@ export default function WaitingRoom() {
         console.error('No se encontró un número en el ID:', id);
       }
     }
-
-    // Obtener el ID del jugador del localStorage
-    const playerData = localStorage.getItem('Player');
-    if (playerData) {
-      const player = JSON.parse(playerData);
-      setPlayerId(player.id);
-    }
   }, [id]);
 
   if (gameId === null) {
@@ -44,4 +36,3 @@ export default function WaitingRoom() {
     </div>
   );
 }
-
