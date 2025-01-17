@@ -1,4 +1,4 @@
-import GamesList from './components/GamesList';
+import GamesList from './Components/GamesList';
 
 export default function Home() {
   return (

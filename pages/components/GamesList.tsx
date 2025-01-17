@@ -89,7 +89,7 @@ function RegisterModal({ game, onClose }: { game: Game; onClose: () => void }) {
         );
   
         // Redirigir a la sala de espera
-        router.push(`/sala-de-espera-${game.id}`);
+        router.push(`/sala-de-espera/${game.id}`);
       } else {
         setError("Error al registrar jugador");
       }
