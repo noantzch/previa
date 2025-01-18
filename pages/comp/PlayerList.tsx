@@ -57,9 +57,14 @@ export default function PlayerList({ gameId }: PlayerListProps) {
         if (gameResponse.ok) {
           const gameData = await gameResponse.json();
           console.log('Estado del juego obtenido:', gameData);
+
+          // Obtener el valor de "without_dbanswers" del localStorage
+          const playerData = JSON.parse(localStorage.getItem('Player') || '{}');
+          const withoutDbAnswers = playerData?.without_dbanswers;
+
           // Si el juego ha comenzado, obtener y almacenar las preguntas
           if (gameData.game.started) {
-            console.log('El juego ha comenzado. Guardando preguntas en localStorage y redirigiendo a /question...');
+            console.log('El juego ha comenzado. Guardando preguntas en localStorage y redirigiendo...');
 
             // Obtener preguntas y almacenarlas en localStorage
             const questionsResponse = await fetch(`/api/getAllQuestions?game_id=${gameIdNumber}`);
@@ -75,8 +80,12 @@ export default function PlayerList({ gameId }: PlayerListProps) {
               localStorage.setItem('Questions', JSON.stringify(questionsWithGamed));
               console.log('Preguntas guardadas en localStorage');
 
-              // Redirigir a /question
-              router.push('/question');
+              // Redirigir dependiendo del valor de "without_dbanswers"
+              if (withoutDbAnswers === false) {
+                router.push('/question');
+              } else {
+                router.push('/question2');
+              }
             } else {
               console.error('No se pudieron obtener las preguntas');
             }

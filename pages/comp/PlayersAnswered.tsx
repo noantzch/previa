@@ -5,12 +5,14 @@ type Player = {
   id: number;
   name: string;
   answer: boolean | null;
+  answer_text?: string; // Agregado para el caso sin respuesta en DB
 };
 
 export default function PlayersAnswered() {
   const [answeredPlayers, setAnsweredPlayers] = useState<Player[]>([]);
   const [unansweredPlayers, setUnansweredPlayers] = useState<Player[]>([]);
   const [gameId, setGameId] = useState<string | null>(null);
+  const [withoutDbanswers, setWithoutDbanswers] = useState<boolean>(false); // Nuevo estado
   const router = useRouter();
 
   useEffect(() => {
@@ -20,6 +22,7 @@ export default function PlayersAnswered() {
       if (playerData) {
         const player = JSON.parse(playerData);
         setGameId(player.game_id);
+        setWithoutDbanswers(player.without_dbanswers); // Obtener withoutDbanswers
       } else {
         console.error('No se encontró ningún jugador en localStorage.');
       }
@@ -39,8 +42,14 @@ export default function PlayersAnswered() {
 
         if (response.ok) {
           const players: Player[] = data.players;
-          const answered = players.filter((player) => player.answer !== null);
-          const unanswered = players.filter((player) => player.answer === null);
+
+          // Si withoutDbanswers es true, usamos answer_text en vez de answer
+          const answered = players.filter((player) =>
+            withoutDbanswers ? player.answer_text : player.answer !== null
+          );
+          const unanswered = players.filter((player) =>
+            withoutDbanswers ? !player.answer_text : player.answer === null
+          );
 
           setAnsweredPlayers(answered);
           setUnansweredPlayers(unanswered);
@@ -49,8 +58,13 @@ export default function PlayersAnswered() {
             await updateGameAnsweredStatus(gameId);
           }
 
+          // Redirección condicional
           if (unanswered.length === 0) {
-            router.push('/answer');
+            if (withoutDbanswers) {
+              router.push('/answerWDB'); // Redirigir a "/answerWDB" si withoutDbanswers es true
+            } else {
+              router.push('/answer'); // Redirigir a "/answer" si withoutDbanswers es false
+            }
           }
         } else {
           console.error('Error fetching players:', data.error);
@@ -65,14 +79,14 @@ export default function PlayersAnswered() {
       const interval = setInterval(fetchPlayers, 2000);
       return () => clearInterval(interval);
     }
-  }, [router, gameId]);
+  }, [router, gameId, withoutDbanswers]); // Agregado withoutDbanswers como dependencia
 
   const updateGameAnsweredStatus = async (gameId: string) => {
     try {
       const response = await fetch('/api/setAnsweredFalse', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
         },
         body: JSON.stringify({ game_id: gameId }),
       });

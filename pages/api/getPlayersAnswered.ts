@@ -6,6 +6,7 @@ type Player = {
   name: string;
   answer: boolean;
   game_id: number; 
+  answer_text: string;
 };
 
 export default async function handler(
@@ -23,7 +24,7 @@ export default async function handler(
 
     // Consulta para traer los jugadores de un game_id específico
     const result = await sql<Player>`
-      SELECT id, name, answer, game_id 
+      SELECT id, name, answer, game_id, answer_text
       FROM players 
       WHERE game_id = ${gameId};
     `;
