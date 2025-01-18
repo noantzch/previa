@@ -10,6 +10,7 @@ type Question = {
   is_correct: boolean;
   answer_text: string;
   image_url: string | null;
+  gamed: boolean;
 };
 
 const Questions: React.FC = () => {
@@ -20,11 +21,13 @@ const Questions: React.FC = () => {
   const fetchQuestions = async (url: string) => {
     try {
       const response = await fetch(url);
+      console.log('API Response:', response); // Verifica la respuesta de la API
       if (!response.ok) {
         throw new Error(`Network response was not ok: ${response.status}`);
       }
       const data = await response.json();
-      setQuestions(data.question);
+      console.log('API Data:', data); // Verifica los datos recibidos
+      setQuestions(data.question); // Aseguramos que se guarde el array de preguntas
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
@@ -39,19 +42,52 @@ const Questions: React.FC = () => {
 
   useEffect(() => {
     const loadQuestions = async () => {
-      // Usamos un endpoint relativo que se resuelve automáticamente según el entorno
-      const success = await fetchQuestions('/api/getQuestion');
+      // Obtener el arreglo de preguntas desde localStorage y asegurar que es un arreglo de objetos tipo Question
+      const questions: Question[] = JSON.parse(localStorage.getItem('Questions') || '[]');
+  
+      if (!questions || questions.length === 0) {
+        setError('No questions found in localStorage');
+        return;
+      }
+  
+      // Buscar el primer objeto con "gamed: false"
+      const question = questions.find((q: Question) => !q.gamed);
+  
+      if (!question) {
+        setError('No question with gamed: false found');
+        return;
+      }
+  
+      const questionId = question.id; // Obtener el id del primer objeto con "gamed: false"
+  
+      // Agregar console.log para ver el id que se va a usar en la API
+      console.log(`Using question ID for API request: ${questionId}`);
+  
+      // Usamos el ID de la pregunta para hacer la solicitud
+      const success = await fetchQuestions(`/api/getQuestion?id=${questionId}`);
       if (!success) {
         setError('Failed to fetch questions');
+        return;
       }
-    };
 
+      // Cambiar el valor de "gamed" a true para la pregunta seleccionada
+      const updatedQuestions = questions.map(q => 
+        q.id === questionId ? { ...q, gamed: true } : q
+      );
+      
+      // Guardar las preguntas actualizadas en localStorage
+      localStorage.setItem('Questions', JSON.stringify(updatedQuestions));
+    };
+  
     loadQuestions();
   }, []);
 
+  useEffect(() => {
+    console.log('Questions state:', questions); // Verifica el estado de las preguntas después de actualizarlo
+  }, [questions]);
+
   const updateAnswer = async (playerId: number, answer: boolean) => {
     try {
-      // Usamos un endpoint relativo que se resuelve automáticamente según el entorno
       const response = await fetch('/api/setAnswer', {
         method: 'POST',
         headers: {
@@ -105,7 +141,7 @@ const Questions: React.FC = () => {
       <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {questions.map((question) => (
           <div
-            key={question.question_answer_id}
+            key={question.id} // Use question.id as the key
             className="border p-4 flex items-center justify-start space-x-4"
           >
             {question.image_url && (
@@ -130,7 +166,7 @@ const Questions: React.FC = () => {
       </div>
 
       {message && <p>{message}</p>}
-      
+
       <PlayersAnswered />
     </div>
   );
