@@ -11,7 +11,13 @@ type Player = {
 };
 
 interface PlayerListProps {
-  gameId: string; // Asegúrate de que el tipo sea 'string'
+  gameId: string;
+}
+
+interface Question {
+  id: number;
+  question: string;
+  gamed: boolean; // Añadido para tu lógica
 }
 
 export default function PlayerList({ gameId }: PlayerListProps) {
@@ -51,10 +57,29 @@ export default function PlayerList({ gameId }: PlayerListProps) {
         if (gameResponse.ok) {
           const gameData = await gameResponse.json();
           console.log('Estado del juego obtenido:', gameData);
-          // Redirigir si el juego ha comenzado
+          // Si el juego ha comenzado, obtener y almacenar las preguntas
           if (gameData.game.started) {
-            console.log('El juego ha comenzado. Redirigiendo a /question...');
-            router.push('/question');
+            console.log('El juego ha comenzado. Guardando preguntas en localStorage y redirigiendo a /question...');
+
+            // Obtener preguntas y almacenarlas en localStorage
+            const questionsResponse = await fetch(`/api/getAllQuestions?game_id=${gameIdNumber}`);
+            if (questionsResponse.ok) {
+              const questionsData = await questionsResponse.json();
+              // Mapeamos las preguntas usando el tipo `Question`
+              const questionsWithGamed: Question[] = questionsData.questions.map((question: Question) => ({
+                ...question,
+                gamed: false, // Inicializamos gamed como false
+              }));
+
+              // Guardar las preguntas en localStorage
+              localStorage.setItem('Questions', JSON.stringify(questionsWithGamed));
+              console.log('Preguntas guardadas en localStorage');
+
+              // Redirigir a /question
+              router.push('/question');
+            } else {
+              console.error('No se pudieron obtener las preguntas');
+            }
           } else {
             console.log('El juego aún no ha comenzado.');
           }
