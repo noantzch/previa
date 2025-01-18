@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log("GET request received. Game ID:", game_id);
 
       const result = await sql<Game>`
-        SELECT id, started, answered 
+        SELECT id, started, answered, without_dbanswers 
         FROM games
         WHERE id = ${game_id}
       `;

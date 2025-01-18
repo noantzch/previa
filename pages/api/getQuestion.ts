@@ -21,7 +21,7 @@ export default async function handler(
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    // Obtén el ID de la pregunta desde los parámetros de la query
+    // Obtén   el ID de la pregunta desde los parámetros de la query
     const { id } = req.query;
 
     if (!id || typeof id !== "string") {

@@ -58,6 +58,11 @@ function RegisterModal({ game, onClose }: { game: Game; onClose: () => void }) {
     }
   
     try {
+      // Obtener el valor de "without_dbanswers" de la API
+      const gameResponse = await fetch(`/api/game?game_id=${game.id}`);
+      const gameData = await gameResponse.json();
+      const withoutDbAnswers = gameData.game.without_dbanswers;
+  
       const response = await fetch(`/api/checkAdmin?game_id=${game.id}`);
       const data = await response.json();
   
@@ -77,7 +82,7 @@ function RegisterModal({ game, onClose }: { game: Game; onClose: () => void }) {
       if (registerResponse.ok) {
         const playerData = await registerResponse.json();
   
-        // Guardar información en localStorage
+        // Guardar información en localStorage, incluyendo el valor de "without_dbanswers"
         localStorage.setItem(
           "Player",
           JSON.stringify({
@@ -85,6 +90,7 @@ function RegisterModal({ game, onClose }: { game: Game; onClose: () => void }) {
             admin: playerData.admin,
             game_id: playerData.game_id,
             answered: playerData.answer,
+            without_dbanswers: withoutDbAnswers,  // Agregar "without_dbanswers"
           })
         );
   
